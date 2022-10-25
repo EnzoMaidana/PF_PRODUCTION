@@ -14,4 +14,4 @@ export function searchForInventory(name) {
 }else{
     return { type: "default"}
 }
-}
+};
