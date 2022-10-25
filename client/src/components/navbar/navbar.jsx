@@ -255,7 +255,7 @@ export default function PrimarySearchAppBar() {
     try {
       const token = await getAccessTokenSilently();
       const response = await axios.post(
-        "http://localhost:3001/users",
+        "https://pfproduction-production.up.railway.app/users",
         {
           name: user.name || " ",
           email: user.email,
