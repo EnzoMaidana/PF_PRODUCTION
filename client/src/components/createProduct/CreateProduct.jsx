@@ -1,91 +1,67 @@
 import React from 'react';
 import { useDispatch, useSelector} from "react-redux";
 import { useState, useEffect} from "react";
-import  {getCategories}  from "../../redux/actions/get_categories";
-import {getBrands} from "../../redux/actions/get_brands"
+import { getCategories }  from "../../redux/actions/get_categories";
+import { getBrands } from "../../redux/actions/get_brands"
 import { createNewProducts } from '../../redux/actions/create_new_products';
-import { Link, useHistory} from "react-router-dom";
+import { getAdminProducts } from '../../redux/actions/get_admin_products'
+import { updateProduct } from '../../redux/actions/update_product'
+import { Link } from "react-router-dom";
 import "./createProduct.css"
-import {useAuth0} from '@auth0/auth0-react';
 import axios from 'axios';
 import { Image } from "cloudinary-react";
     
 
-function CreateProduct() {
-  const { user, isAuthenticated, getAccessTokenSilently } = useAuth0();
-    const dispatch = useDispatch();
-    const history = useHistory();
-    let category = useSelector((state) => state.categories)
-    let brands = useSelector((state) => state.brand)
+function CreateProduct({product, setDisplay, cleanCurrent}) {
+  const dispatch = useDispatch();
+  let category = useSelector((state) => state.categories)
+  let brands = useSelector((state) => state.brand)
 
-    useEffect(() => {
-        dispatch(getCategories());
-        dispatch(getBrands());
-    },[])
-
-    async function callProtectedApiToken2() {
-      try {
-        const token = await getAccessTokenSilently();
-        const response = await axios.post(
-          "https://pfproduction-production.up.railway.app/users",
-          {
-            name: user.name || " ",
-            email: user.email,
-          },
-          {
-            headers: {
-              authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        user.isAdmin = response.data.userRegisted.isAdmin;
-        user.isBanned = response.data.userRegisted.isAdmin;
-        console.log(response.data);
-        console.log(user);
-      } catch (error) {
-        console.log(error);
-      }
-    }
-  
-    useEffect(() => {
-      if (isAuthenticated) {
-        return () => {
-          const usuario = callProtectedApiToken2();
-          console.log(usuario);
-        };
-      }
-    });
-
-    const[input,setInput] = useState({
-        name:"",
-        price:"",
-        description:"",
-        image:[],
-        categories:[],
-        stock:"",
-        brand:"",
-        //brandimage:""
-    })
-
-    
-    
   const [imagen, setImagen] = useState(""); //este estado va a subir los datos a cloudinary
-  const [imageData, setimageData] = useState({
+  const [imageData, setimageData] = useState({imageReel: [], });
     // este estado guardara las direcciones de cloudinary para pisar el input
-    imageReel: [],
-  });
+
   const [error, setError] = useState("");
-  const [button, setButton] = useState({
-    complete: false,
-  });
+  const [button, setButton] = useState({complete: false,});
+
+  const[input,setInput] = useState({
+    name:"",
+    price:"",
+    description:"",
+    image:[],
+    categories:[],
+    stock:"",
+    brand:"",
+    brandimage:""
+  })
+
+  useEffect(() => {
+    if(product){
+      setInput({
+        name: product.name,
+        price: product.price,
+        description: product.description,
+        image: product.image && product.image,
+        categories: product.categories,
+        stock: product.stock,
+        brand: product.brand,
+      })
+      setimageData({imageReel: product.image && product.image,})
+    }
+      dispatch(getCategories());
+      dispatch(getBrands());
+  },[])
 
     function handleChange(e){
-          setInput({...input, [e.target.name]: e.target.value});
-          setError(validate({...input,[e.target.name]: e.target.value}));
+      if(e.target.name === "brand"){
+        setInput({...input, [e.target.name]: e.target.value, brandimage: brands.find(b =>  b.name === e.target.value).image})
+        setError(validate({...input,[e.target.name]: e.target.value}));
+      }else{
+        setInput({...input, [e.target.name]: e.target.value});
+        setError(validate({...input,[e.target.name]: e.target.value}));
       }
+    }
 
-    
-    
     function validate(input){
         let errors = {};
         if(!input.name){
@@ -130,82 +106,9 @@ function CreateProduct() {
         return errors;  
     }
 
-
-  function handleChange(e) {
-    setInput({ ...input, [e.target.name]: e.target.value });
-    setError(validate({ ...input, [e.target.name]: e.target.value }));
-  }
-
-  function validate(input) {
-    let errors = {};
-    if (!input.name) {
-      errors.name = "El campo no debe quedar vacio";
-    }
-    if (!input.price) {
-      errors.price = "El campo no debe quedar vacio";
-    } else if (input.price <= 0) {
-      errors.price = "El precio no puede ser menor a 0";
-    }
-    if (!input.description) {
-      errors.description = "El campo no debe quedar vacio";
-    } else if (input.description.length > 500) {
-      errors.description =
-        "La descripcion no puede tener mas de 500 caracteres";
-    }
-    if (input.image.length <= 0) {
-      errors.image = "Debes subir al menos 1 imagen";
-    } else if (input.image.length > 5) {
-      errors.image = "No puedes subir mas de 5 imagenes";
-    }
-    if (input.categories.length <= 0) {
-      errors.categories = "Debes elegir al menos 1 categoria";
-    } else if(input.categories.length > 5){
-      errors.categories = "Puedes elegir hasta 5 categorias";
-    }
-
-    if (!input.stock) {
-      errors.stock = "El campo no puede quedar vacio";
-    } else if (input.stock < 1) {
-      errors.stock = "Debes tener al menos 1 articulo";
-    }
-    if (!input.brand) {
-      errors.brand = "El campo no puede quedar vacio";
-    }
-    if (
-      errors.name ||
-      errors.price ||
-      errors.description ||
-      errors.image ||
-      errors.categories ||
-      errors.stock ||
-      errors.brand
-    ) {
-      setButton({
-        complete: false,
-      });
-    } else {
-      setButton({
-        complete: true,
-      });
-    }
-
-    return errors;
-  }
-
   const updateImage = (e) => {
     setImagen(e.target.files[0]);
   };
-
-  // function handleImage(e){ // agrega una nueva direccion de imagen al array de imagenes
-  //   e.preventDefault();
-  //   let imagen = document.getElementById("imagen").value
-
-  //   console.log(imagen)
-  //   setImagen(
-  //       e.target.value
-  //   )
-
-  // }
 
   function handleButton(e) {
     // pisa el input con los datos que hay en imagenes
@@ -258,14 +161,6 @@ function CreateProduct() {
       );
     }
   }
-  function handleBrand(e) {
-    if (!input.brand) {
-      setInput({ ...input, brand: e.target.value });
-      let selectedbrand = brands.filter(b => b.name === e.target.value)
-      setInput({...input, brandimage: selectedbrand[0].image})
-      setError(validate({ ...input, brand: e.target.value }));
-    }
-  }
 
   function handleDelete(e) {
     let nombre = e.target.innerText;
@@ -283,29 +178,26 @@ function CreateProduct() {
     });
   };
 
-  function handleDeleteBrand(e) {
-    setInput({
-      ...input,
-      brand: "",
-    });
-  }
-
   function handleSubmit(e) {
     // crea el nuevo articulo, faltaria agregarle en el dispatch la accion que lo crea
     e.preventDefault(e);
-
-    dispatch(createNewProducts(input));
-    alert("Articulo Creado");
-    setInput({
-      name: "",
-      price: "",
-      description: "",
-      image: [],
-      categories: [],
-      stock: "",
-      brand: "",
-    });
-    history.push("/");
+    if(product){
+      dispatch(updateProduct(product.id,input))
+      setDisplay("")
+      setTimeout(()=>{dispatch(getAdminProducts())},2000)
+    }else{
+      dispatch(createNewProducts(input));
+      setInput({
+        name: "",
+        price: "",
+        description: "",
+        image: [],
+        categories: [],
+        stock: "",
+        brand: "",
+        brandimage: ""
+      });
+    }
   }
 
   function handleReset(e) {
@@ -319,6 +211,7 @@ function CreateProduct() {
       categories: [],
       stock: "",
       brand: "",
+      brandimage: ""
     });
     setError("");
     setButton({
@@ -328,11 +221,9 @@ function CreateProduct() {
 
   return (
     
-    <div>
-
+    <div>        
         
-        
-        {isAuthenticated && user.isAdmin ?  <form className="formContainerProd" onSubmit={e => handleSubmit(e)}>
+      <form className="formContainerProd" onSubmit={e => handleSubmit(e)}>
         <div className='formDataProd'>
           <div className='formFirstDivProd'>  
 
@@ -354,7 +245,7 @@ function CreateProduct() {
             />
             <p className={error.price ? "danger" : "normal"}>{error.price}</p>
 
-            <label>Stock:</label>
+            <label>Inventario:</label>
             <input
               type="number"
               value={input.stock}
@@ -392,30 +283,20 @@ function CreateProduct() {
 
             <label>Marca:</label>
             <select
-              name={input.brand}
-              onChange={(e) => handleBrand(e)}
-              defaultValue=""
-            >
-              <option disabled value="">
-                Seleccione una Marca
-              </option>
+              name='brand'
+              value={input.brand}
+              onChange={(e) => handleChange(e)}
+            > 
+              <option disabled value="">Seleccione una Marca</option>
               {brands &&
                 brands.map((el) => <option value={el.name}>{el.name}</option>)}
             </select>
-            {input.brandimage && <img src={input.brandimage}></img>}
-            <div className="formCategories">
-              {input.brand ? (
-                <div className="inputCategories">
-                  <p onClick={(e) => handleDeleteBrand(e)}>{input.brand}</p>
-                </div>
-              ) : (
-                ""
-              )}
-            </div>
+            { input.brandimage ? <img src={input.brandimage}></img>:null}
+            
             <p className={error.brand ? "danger" : "normal"}>{error.brand}</p>
           </div>
           <div className="formSecondDivProd">        
-            <label>Descripcion:</label>
+            <label>Descripción:</label>
             <textarea
               type="text"
               value={input.description}
@@ -460,14 +341,24 @@ function CreateProduct() {
 
         </div>
         <div>
-          <button className="button buttonLink">
+          {product ? <button className="button buttonLink" onClick={() => cleanCurrent()}>
+              Cancelar
+          </button> : <button className="button buttonLink">
             <Link to="/" className="buttonLink">
               Volver
             </Link>
-          </button>
-          {button.complete === false ? (
+          </button>}
+          {button.complete === false ? product ? (
+            <button disabled="disabled" className="button disable">
+              Modificar
+            </button>
+          ) : (
             <button disabled="disabled" className="button disable">
               Crear
+            </button>
+          ) : product ? (
+            <button type="submit" className="button">
+              Modificar
             </button>
           ) : (
             <button type="submit" className="button">
@@ -482,10 +373,8 @@ function CreateProduct() {
             Limpiar
           </button>
         </div>
-      
 
-        </form> : <label >upss parece que no tienes sopermi</label> }
-
+        </form> 
     </div>
   );
 }

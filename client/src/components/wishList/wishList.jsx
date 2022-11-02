@@ -7,22 +7,29 @@ import { deleteWishList } from '../../redux/actions/delete_wish_list';
 import styles from "./wishList.module.css";
 import { getFavorites } from '../../redux/actions/get_favorites';
 import DeleteForeverOutlinedIcon from '@mui/icons-material/DeleteForeverOutlined';
-
+import { useHistory } from "react-router-dom";
+import ArrowLeftRoundedIcon from '@mui/icons-material/ArrowLeftRounded';
+import IconButton from '@mui/material/IconButton';
 
 export default function WishList(props){
 
-
+const history = useHistory()
 const dispatch = useDispatch()
 const favorites = useSelector(state => state.favorites)
 
 
 useEffect(() => {  // Didmount and DidUpdate controlled
+    window.scrollTo(0, 0)
     dispatch(getFavorites());
 },[dispatch])
 
 
 
 return(
+        <div>
+            
+            <div className={styles.volver} onClick={() => history.goBack()}><IconButton sx={{ padding: 0 }} ><ArrowLeftRoundedIcon /></IconButton> Volver</div>
+            
         <div className={styles.divShoppingCart}>
             <h1 className={styles.title}>Mis productos favoritos</h1>
             <hr></hr>
@@ -48,6 +55,7 @@ return(
             }
             <hr></hr>
             
+        </div>
         </div>
     )
 }

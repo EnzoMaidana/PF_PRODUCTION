@@ -1,6 +1,7 @@
 import React,{useEffect} from "react";
 import Card from '../card/card'
 import { useDispatch, useSelector } from 'react-redux';
+import { useHistory } from 'react-router-dom';
 import { getAllProducts } from '../../redux/actions/get_products';
 import Loading from "../loading/loading";
 import './home.css'
@@ -13,6 +14,10 @@ import Fab from '@mui/material/Fab';
 import useScrollTrigger from '@mui/material/useScrollTrigger';
 import Toolbar from '@mui/material/Toolbar';
 import { cleanOtherProducts } from '../../redux/actions/clean_other_products'
+import BestRatedProducts from "./AuxHome/bestRatedPRoducts";
+import YourFavorites from "./AuxHome/yourFavorites";
+import ArrowLeftRoundedIcon from '@mui/icons-material/ArrowLeftRounded';
+import IconButton from '@mui/material/IconButton';
 
 function ScrollTop(props) {
     const { children, window } = props;
@@ -42,7 +47,7 @@ function ScrollTop(props) {
         <Box
           onClick={handleClick}
           role="presentation"
-          sx={{ position: 'fixed', bottom: 16, right: 16 }}
+          sx={{ position: 'fixed', bottom: 16, right: 16,  zIndex: 10 }}
         >
           {children}
         </Box>
@@ -65,10 +70,12 @@ export default function Home(props){
 
     const dispatch = useDispatch();
     const products = useSelector( state => state.products)
-    
+    const history = useHistory()
+    let path = history.location.pathname
+
     useEffect(() => {  // Didmount and DidUpdate controlled
         window.scrollTo(0, 0)
-        dispatch(getAllProducts());
+        if(path === "/") dispatch(getAllProducts());    
         return(() => {
           dispatch(cleanOtherProducts())
       })
@@ -76,18 +83,20 @@ export default function Home(props){
 
     return(
         products[0] && products[0].price ? <div>
-            <Toolbar id="back-to-top-anchor" />
-            <div><Banner/></div>
+            {path === '/' ? <Toolbar id="back-to-top-anchor" /> : null}
+            {path === '/' ? <div><Banner/></div> : <div className="volver" onClick={() => history.goBack()}><IconButton sx={{ padding: 0 }} ><ArrowLeftRoundedIcon /></IconButton> Volver</div>}
             <div>
-              <h2 className="homeTitle">Todos los productos</h2>
+              {path === '/' ? <YourFavorites/> : null}
+              {path === '/' ? <BestRatedProducts/> : null}
+              {path === '/' ? <h2 className="homeTitle">Todos los productos</h2> : <h2 className="homeTitle">Resultados de la Busqueda</h2>}
               <div className="homeTable"> {/*#AgregameUnaEstrella*/}
                   { products.map(a => a.stock === 0 ? null : <Card id={a.id} name={a.name} image={a.image} price={a.price} score={a.score}/>) }
               </div>
-              <ScrollTop {...props}>
-                  <Fab size="small" aria-label="scroll back to top">
-                      <KeyboardArrowUpIcon />
+              {path === '/' ? <ScrollTop sx={{ zIndex: 10}} {...props}>
+                  <Fab  size="small" aria-label="scroll back to top">
+                      <KeyboardArrowUpIcon/>
                   </Fab>
-              </ScrollTop>
+              </ScrollTop> : null}
             </div>
         </div> : <Loading/>
     )
