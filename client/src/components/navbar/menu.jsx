@@ -84,7 +84,7 @@ export default function TemporaryDrawer() {
     try{
   
       const token = await getAccessTokenSilently();
-      const response = await axios.post(`${BACK_URL}/users` , {
+      const response = await axios.post(`https://pfproduction-production.up.railway.app/users` , {
         name: user.name || " " , email: user.email
        
       

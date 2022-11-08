@@ -91,7 +91,7 @@ export default function UpdateInventory(){
 
     const getUsuario = (id) => {
         
-        return fetch(`${BACK_URL}/users/${id}`)
+        return fetch(`https://pfproduction-production.up.railway.app/users/${id}`)
         .then(res => res.json())
         .then(obj =>  alert ("el usaurio es " + obj.email)  )
        

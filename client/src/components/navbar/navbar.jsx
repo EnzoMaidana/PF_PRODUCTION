@@ -371,7 +371,7 @@ export default function PrimarySearchAppBar() {
     try {
       const token = await getAccessTokenSilently();
       const response = await axios.post(
-        `${BACK_URL}/users`,
+        `https://pfproduction-production.up.railway.app/users`,
         {
           name: user.name || " ",
           email: user.email,
@@ -403,7 +403,7 @@ export default function PrimarySearchAppBar() {
   //     console.log("estamos aca")
   //     const token = await getAccessTokenSilently();
   //     const response = await axios.post(
-  //       `${BACK_URL}/infoUserAuth0`,
+  //       `https://pfproduction-production.up.railway.app/infoUserAuth0`,
   //       {
           
   //         email: "xavier@email.com",

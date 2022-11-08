@@ -4,7 +4,7 @@ const { BACK_URL = 'http://localhost:3001' } = process.env
 
 export function getAdminProducts() {
     return async function (dispatch) {
-        var res = await axios(`${BACK_URL}/products`);
+        var res = await axios(`https://pfproduction-production.up.railway.app/products`);
         return dispatch({
             type: GET_ADMIN_PRODUCTS,
             payload: res.data
