@@ -5,7 +5,7 @@ const { BACK_URL = 'http://localhost:3001' } = process.env
 
 
 export const deleteBrand = (id) => dispatch => {
-    return axios.delete(`${BACK_URL}/brands?id=${id}`)
+    return axios.delete(`https://pfproduction-production.up.railway.app/brands?id=${id}`)
     .then(res => dispatch({type: DELETE_BRAND, payload: res.data}) )
     .catch(err => console.log(err))
     }

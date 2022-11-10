@@ -3,7 +3,7 @@ const { BACK_URL = 'http://localhost:3001' } = process.env
 
 export const checkOutCart = (payload) => dispatch => {
     console.log("Payload:",payload)
-    return fetch(`${BACK_URL}/checkout`,{
+    return fetch(`https://pfproduction-production.up.railway.app/checkout`,{
         method: "POST", 
         headers: {'Content-Type': 'application/json'}, 
         body: JSON.stringify(payload)})
